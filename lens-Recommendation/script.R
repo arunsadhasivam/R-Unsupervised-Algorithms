@@ -3,6 +3,10 @@ library(data.table)
 movies<- readLines("data/movies.dat")
 df<-strsplit(movies,split = "::")
 
+
+
+
+
 reviews <- read.delim2('data/movies.dat', header=FALSE, col.names=c('user.id','item.id','rating','timestamp'))
 
 reviews[[1]][1]
@@ -28,7 +32,6 @@ for(i in 1:total){
 }
  #print(dt[90]$name)#"Animation|Children's|Comedy"
 
-
 #dt[[1]][1]#1
 #dt$sno[1]#1
 
@@ -41,35 +44,39 @@ for(i in 1:total){
 
 
 library("recommenderlab")
-colSums(is.na(dt))
-dfsno<- as.data.frame(dt$sno,stringsAsFactors=FALSE)
-dfname<- as.data.frame(dt$name,stringsAsFactors=FALSE)
-dfcategory<- as.data.frame(dt$category,stringsAsFactors=FALSE)
-
-dtfinal<-data.frame(total)
-
-dtfinal[1:1]
-cbind  (dtfinal,dfsno)
-
-dtfinal[1:3]
-
-#traceback(RS.matrix <-  as(finaldt, "realRatingMatrix"))
- 
-RS.matrix <-  as(finaldt, "realRatingMatrix")
-RS.model <- Recommender(RR.matrix, method="UBCF")
 
 
-Recommended.items <- predict(RS.model,  RR.matrix["name",], n=total)
-identical(as(RS.matrix, "matrix"),m)
-recommenderRegistry$get_entries(dataType = "realRatingMatrix")
+#converting 2 dimension data to single dimension 
+#by converting to vector
+#and adding as column to data.table.
 
+vcsno<-as.vector(dt$sno)
+vcname<-as.vector(dt$name)
+vccat<-as.vector(dt$category)
 
+vccat [1:3]
+dtfinal<- data.table(sno = vcsno, name=vcname,category=vccat)
 
+# converted to single dimension.
 
+#dtfinal[1:3,1]
+#sno                    name                     category
+#1:   1        Toy Story (1995)  Animation|Children's|Comedy
+#2:   2          Jumanji (1995) Adventure|Children's|Fantasy
+#3:   3 Grumpier Old Men (1995)               Comedy|Romance
 
+dtfinal$name[1:5]
+#[1] "Toy Story (1995)"                  
+#[2] "Jumanji (1995)"                    
+#[3] "Grumpier Old Men (1995)"           
+#[4] "Waiting to Exhale (1995)"          
+#[5] "Father of the Bride Part II (1995)"
 
-
-# 
+dfFrame <-data.frame(dtfinal)
+dfFrame[1:3,2]
+# since it is internal vector it is showing in character. 
+#[1] "Toy Story (1995)"        "Jumanji (1995)"         
+#[3] "Grumpier Old Men (1995)"
 
 # getval<-function(){
 #   for(i in 1:total){
