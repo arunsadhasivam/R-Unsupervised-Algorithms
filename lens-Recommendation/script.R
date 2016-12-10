@@ -77,7 +77,10 @@ dtspecifynovec[1:3,2,with=FALSE] #with =false says not a vector.
 #2:          Jumanji (1995)
 #3: Grumpier Old Men (1995)
 
-#since need to specify with= false otherwise it will return 2
+#data.table also work but since need to specify with= false otherwise it will return 2
+#hence create a data.frame and append each vector 
+#so that simply giving rows,column can retrieve results for selected row , column.
+      
 #e.g
 
 dtspecifynovec[1:3,2] 
