@@ -72,11 +72,39 @@ dtfinal$name[1:5]
 #[4] "Waiting to Exhale (1995)"          
 #[5] "Father of the Bride Part II (1995)"
 
-dfFrame <-data.frame(dtfinal)
-dfFrame[1:3,2]
+
+dtfinal[1:3,2]
+#since it consider as one row value only not as separater columns
+#it just returns index position regardless of column or row
+#if row,column syntax is given.
+#[1]2
+dtfinal[,2]
+#[1]2
+
+dtfinal[,333]
+#[1]333
+
+#to act as separater columns
+dffinal <-data.frame(dtfinal)
+dffinal[1:3,2]
 # since it is internal vector it is showing in character. 
 #[1] "Toy Story (1995)"        "Jumanji (1995)"         
 #[3] "Grumpier Old Men (1995)"
+
+dffinal[1:3,]
+#sno                    name                     category
+#1   1        Toy Story (1995)  Animation|Children's|Comedy
+#2   2          Jumanji (1995) Adventure|Children's|Fantasy
+#3   3 Grumpier Old Men (1995)               Comedy|Romance
+dffinal[1,3]
+#returns all
+#"Animation|Children's|Comedy"
+#..........
+#..........
+#[3881] "Drama"                                          
+#[3882] "Drama"                                          
+#[3883] "Drama|Thriller"
+
 
 # getval<-function(){
 #   for(i in 1:total){
