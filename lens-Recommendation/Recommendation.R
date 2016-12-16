@@ -1,4 +1,3 @@
-
 library(data.table)
 users<- readLines("data/users.dat")
 movies<- readLines("data/movies.dat")
@@ -8,33 +7,6 @@ ratings<- readLines("data/ratings.dat")
 library("recommenderlab")
 library(reshape2)
 
-usersdt<-formatUsersdf(users)
-usersdtfinal <-data.table(as.vector(usersdt))
-usersdtfinal[1:5,2,With=FALSE]
-
-
-moviesdt<- formatMoviesdf(movies)
-moviesdtfinal <-data.table(as.vector(moviesdt))
-moviesdtfinal[1:3,2,with=FALSE]
-
-
-ratingsdt<-formatRatingsdf(ratings)
-ratingsdtfinal <-data.table(as.vector(ratingsdt))
-ratingsdtfinal[1:3,2,with=FALSE]
-#dtfinal[1:3,2]
-
-
-g<-acast(dtfinal, dtfinal$sno ~ dtfinal$category)
-RR.matrix <- as(dtfinal, "matrix")
-RS.model <- Recommender(RR.matrix, method="UBCF")
-g<-acast(tr,  ~ )
-r_b <- binarize(RR.matrix, minRating=1)
-recom <- predict(rec, r[1:nrow(r)], type="ratings")
-
-
-
-
-
 
 
 formatMoviesdf<-function(movies){
@@ -43,15 +15,15 @@ formatMoviesdf<-function(movies){
   total<-length(df)
   #total<-3
   dt<-data.table()
-  dt <- data.table(sno = character(total), name = character(total), category=character(total))
+  dt <- data.table(MovieID = character(total), Title = character(total), Genres=character(total))
   for(i in 1:total){
     for(j in 1:3){
       if(j==1)
-        dt$sno[i]<-df[[i]][j]
+        dt$MovieID[i]<-df[[i]][j]
       if(j==2)
-        dt$name[i]<-df[[i]][j]
+        dt$Title[i]<-df[[i]][j]
       if(j==3)
-        dt$category[i]<-df[[i]][j]
+        dt$Genres[i]<-df[[i]][j]
     }
   }
   return (dt)
@@ -115,3 +87,60 @@ formatRatingsdf<-function(ratings){
   return (dt)
 }
 
+
+usersdt<-formatUsersdf(users)
+
+usersdtfinal <-data.table(as.vector(usersdt))
+#usersdtfinal[1:3,3,With=FALSE]
+#usersdtfinal1<-load(file="usersdtfinal.RData")
+#save(usersdtfinal,file="usersdtfinal.RData")
+
+moviesdt<- formatMoviesdf(movies)
+moviesdtfinal <-data.table(as.vector(moviesdt))
+#moviesdtfinal[1:3,2,with=FALSE]
+
+
+
+ratingsdt<-formatRatingsdf(ratings[1:1000])
+ratingsdtfinal <-data.table(as.vector(ratingsdt))
+#ratingsdtfinal[1:3,2,with=FALSE]
+
+nrow(ratingsdtfinal)
+library(plyr)
+
+userratingsfinal<-join(ratingsdtfinal,usersdtfinal ,by='UserID',
+                type = "left" , match = "first")
+
+write.csv(userratingsfinal,file = "usermoviesratingfinal.csv")
+
+usermoviesratingfinal<-join(userratingsfinal,moviesdtfinal,
+                            by='MovieID',
+                       type = "left" , match = "first")
+
+usermoviesratingfinal$UserID
+write.csv(usermoviesratingfinal,file = "usermoviesratingfinal.csv")
+
+library(reshape2)
+
+#write.csv(usermoviesratingfinal,file = "usermoviesratingfinal.csv")
+ratingmat <- dcast(usermoviesratingfinal, 
+                   UserID+MovieID~Rating, 
+                   value.var = "Movie", na.rm=FALSE)
+ratingmat <- as.matrix(ratingmat[,-1]) #remove userIds
+
+ratingmat <- as(ratingmat, "realRatingMatrix")
+ratingmat_norm <- normalize(ratingmat)
+
+r_b <- binarize(RR.matrix, minRating=1)
+
+recommender_model <- Recommender(ratingmat_norm,
+            method = "UBCF", param=list(method="Cosine",nn=30))
+
+recom <- predict(recommender_model, 
+                 ratingmat[1], n=10) #Obtain top 10 recommendations for 1st user in dataset
+
+recom_list <- as(recom, "list") #convert recommenderlab object to readable list
+recom_result <- matrix(0,10)
+for (i in c(1:10)){
+  recom_result[i] <- movies[as.integer(recom_list[[1]][i]),2]
+}
