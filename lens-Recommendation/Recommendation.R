@@ -111,36 +111,59 @@ library(plyr)
 userratingsfinal<-join(ratingsdtfinal,usersdtfinal ,by='UserID',
                 type = "left" , match = "first")
 
-write.csv(userratingsfinal,file = "usermoviesratingfinal.csv")
+#write.csv(userratingsfinal,file = "usermoviesratingfinal.csv")
 
 usermoviesratingfinal<-join(userratingsfinal,moviesdtfinal,
                             by='MovieID',
                        type = "left" , match = "first")
 
-usermoviesratingfinal$UserID
 write.csv(usermoviesratingfinal,file = "usermoviesratingfinal.csv")
 
 library(reshape2)
-
-#write.csv(usermoviesratingfinal,file = "usermoviesratingfinal.csv")
+#dcast(data, student + class ~ test, value.var='score')
 ratingmat <- dcast(usermoviesratingfinal, 
-                   UserID+MovieID~Rating, 
-                   value.var = "Movie", na.rm=FALSE)
-ratingmat <- as.matrix(ratingmat[,-1]) #remove userIds
+                   MovieID+UserID+Rating~Rating, 
+                   value.var = "Rating", na.rm=FALSE)
+
+
+ratingmat$MovieID
+ colnames(ratingmat)
+#write.csv(ratingmat,"ratings.csv")
+#ratingmat <- as.matrix(ratingmat[,-1]) #remove userIds
+
+
 
 ratingmat <- as(ratingmat, "realRatingMatrix")
+colnames( ratingmat)
 ratingmat_norm <- normalize(ratingmat)
+#colnames( ratingmat_norm)
 
-r_b <- binarize(RR.matrix, minRating=1)
+usersdtfinal[usersdtfinal$UserID %in% colnames(ratingmat_norm)]
+
 
 recommender_model <- Recommender(ratingmat_norm,
             method = "UBCF", param=list(method="Cosine",nn=30))
 
+#colnames( recommender_model)
+#getModel(recommender_model)
+#recommenderRegistry$get_entry_names()
+#recommenderRegistry$get_entry("UBCF", dataType = "ALS_realRatingMatrix")
+ 
 recom <- predict(recommender_model, 
-                 ratingmat[1], n=10) #Obtain top 10 recommendations for 1st user in dataset
+                 ratingmat, n=10) #Obtain top 10 recommendations for 1st user in dataset
 
 recom_list <- as(recom, "list") #convert recommenderlab object to readable list
+recom_list[[1]][2]
 recom_result <- matrix(0,10)
-for (i in c(1:10)){
-  recom_result[i] <- movies[as.integer(recom_list[[1]][i]),2]
+for (i in c(1:9)){
+  result <- movies[as.integer(recom_list[[1]][i])]
+  recom_result[i] <-result
+print(result)
 }
+
+#output
+#"5::Father of the Bride Part II (1995)::Comedy"
+#[1] "7::Sabrina (1995)::Comedy|Romance"
+#[1] "2::Jumanji (1995)::Adventure|Children's|Fantasy"
+#[1] "4::Waiting to Exhale (1995)::Comedy|Drama"
+#[1] "3::Grumpier Old Men (1995)::Comedy|Romance"
