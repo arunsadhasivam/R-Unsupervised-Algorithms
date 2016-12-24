@@ -109,13 +109,13 @@ nrow(ratingsdtfinal)
 library(plyr)
 
 userratingsfinal<-join(ratingsdtfinal,usersdtfinal ,by='UserID',
-                type = "left" , match = "first")
+                       type = "left" , match = "first")
 
 #write.csv(userratingsfinal,file = "usermoviesratingfinal.csv")
 
 usermoviesratingfinal<-join(userratingsfinal,moviesdtfinal,
                             by='MovieID',
-                       type = "left" , match = "first")
+                            type = "left" , match = "first")
 
 # class(usermoviesratingfinal)
 # names(usermoviesratingfinal)
@@ -130,20 +130,27 @@ library(reshape2)
 
 ratingmat <- dcast(usermoviesratingfinal, 
                    Title+ MovieID~Rating, 
-                   value.var = "Rating", na.rm=FALSE)
+                   value.var = "UserID", na.rm=FALSE)
 ratingmat <- as(ratingmat, "realRatingMatrix")
+
+
+
+
 rating_normalize <- normalize(ratingmat)
-recommender_model <- Recommender(rating_normalize, 
-  method = "UBCF", param=list(method="Cosine",nn=30))
+recommender_model <- Recommender(ratingmat, 
+                                 method = "POPULAR")
 colnames( recommender_model)
 predRes <- predict(recommender_model, 
-                 ratingmat, n=10,
-                 type="topNList") #Obtain top 10 recommendations for 1st user in dataset
+                   ratingmat, n=10,
+                   type="topNList") #Obtain top 10 recommendations for 1st user in dataset
 
 predRes_list <- as(predRes, "list") #convert recommenderlab object to readable list
+
 pred_result <- matrix(0,10)
-for (i in 1:10){
-  result <- pred_result[[1]][i]
+predRes_list<-names(predRes_list)
+
+for (i in c(1:10)){ # since predlist is in format $`Age of Innocence, The (1993)`
+  result <- predRes_list[i]
   pred_result[i]<-result
   print(result)
 }
